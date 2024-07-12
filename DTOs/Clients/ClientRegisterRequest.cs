@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BankAccount.DTOs.Clients;
 
-public class ClientRegistrationDTO
+public class ClientRegisterRequest
 {
     [Required]
     [StringLength(200, MinimumLength = 1, ErrorMessage = "The name is required and must be between 1 and 200 characters")]

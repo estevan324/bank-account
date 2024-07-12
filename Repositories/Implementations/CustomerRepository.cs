@@ -14,7 +14,7 @@ public class CustomerRepository : ICustomerRepository
         _userManager = userManager;
     }
 
-    public async Task<IdentityUser> CreateAsync(UserDTO userDto)
+    public async Task<IdentityUser> CreateAsync(UserDetail userDto)
     {
         var user = new IdentityUser
         {

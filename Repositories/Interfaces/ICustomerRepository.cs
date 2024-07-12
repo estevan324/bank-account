@@ -5,5 +5,5 @@ namespace BankAccount.Repositories.Interfaces;
 
 public interface ICustomerRepository
 {
-    Task<IdentityUser> CreateAsync(UserDTO userDto);
+    Task<IdentityUser> CreateAsync(UserDetail userDto);
 }

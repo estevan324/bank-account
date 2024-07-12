@@ -16,9 +16,9 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Guid>> CreateAccount([FromBody] ClientRegistrationDTO client)
+    public async Task<ActionResult<Guid>> CreateAccount([FromBody] ClientRegisterRequest client)
     {
-        var userDto = new UserDTO(client.Name!, client.Cpf!, client.Password!);
+        var userDto = new UserDetail(client.Name!, client.Cpf!, client.Password!);
         var userCreated = await _unitOfWork.CustomerRepository.CreateAsync(userDto);
 
         var account = _unitOfWork.AccountRepository.Create(new Account(client.InitialBalance, userCreated.Id));
