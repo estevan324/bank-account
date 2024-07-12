@@ -1,8 +1,7 @@
 ﻿using BankAccount.DTOs.Clients;
+using BankAccount.Entities;
 using BankAccount.Repositories.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BankAccount.Controllers;
 
@@ -10,18 +9,21 @@ namespace BankAccount.Controllers;
 [ApiController]
 public class AccountController : ControllerBase
 {
-    private readonly ICustomerRepository _customerRepository;
-    public AccountController(ICustomerRepository customerRepository)
+    private readonly IUnitOfWork _unitOfWork;
+    public AccountController(IUnitOfWork unitOfWork)
     {
-        _customerRepository = customerRepository;
+        _unitOfWork = unitOfWork;
     }
 
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateAccount([FromBody] ClientRegistrationDTO client)
     {
-        var user = new UserDTO(client.Name!, client.Cpf!, client.Password!);
-        var result = await _customerRepository.CreateAsync(user);
+        var userDto = new UserDTO(client.Name!, client.Cpf!, client.Password!);
+        var userCreated = await _unitOfWork.CustomerRepository.CreateAsync(userDto);
 
-        return result;
+        var account = _unitOfWork.AccountRepository.Create(new Account(client.InitialBalance, userCreated.Id));
+        await _unitOfWork.CommitAsync();
+
+        return account.Id;
     }
 }

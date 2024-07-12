@@ -1,8 +1,9 @@
 ﻿using BankAccount.DTOs.Clients;
+using Microsoft.AspNetCore.Identity;
 
 namespace BankAccount.Repositories.Interfaces;
 
 public interface ICustomerRepository
 {
-    Task<Guid> CreateAsync(UserDTO userDto);
+    Task<IdentityUser> CreateAsync(UserDTO userDto);
 }

@@ -14,7 +14,7 @@ public class CustomerRepository : ICustomerRepository
         _userManager = userManager;
     }
 
-    public async Task<Guid> CreateAsync(UserDTO userDto)
+    public async Task<IdentityUser> CreateAsync(UserDTO userDto)
     {
         var user = new IdentityUser
         {
@@ -36,6 +36,6 @@ public class CustomerRepository : ICustomerRepository
 
         await _userManager.AddClaimsAsync(user, claims);
 
-        return Guid.Parse(user.Id);
+        return user;
     }
 }
