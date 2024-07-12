@@ -1,8 +1,15 @@
+using BankAccount.Context;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+string sqlServerConnection = builder.Configuration.GetConnectionString("DefaultConnection") ??throw new ArgumentException("Invalid connection string");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(sqlServerConnection));
 
 var app = builder.Build();
 
