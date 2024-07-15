@@ -20,10 +20,8 @@ public class AccountRepository : IAccountRepository
         return account;
     }
 
-    public async Task<double?> ShowBalance(Guid accountId)
+    public async Task<Account?> Get(Guid accountId)
     {
-        var account = await _context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == accountId);
-
-        return (account is null) ? null : account.Balance;
+        return await _context.Accounts.AsNoTracking().FirstOrDefaultAsync(c => c.Id == accountId);
     }
 }

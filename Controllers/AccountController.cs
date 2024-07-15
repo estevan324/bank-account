@@ -32,10 +32,11 @@ public class AccountController : ControllerBase
     [HttpGet("balance")]
     public async Task<ActionResult> ShowBalance([FromQuery] Guid accountId)
     {
-        var balance = await _unitOfWork.AccountRepository.ShowBalance(accountId);
-        if (balance is null)
+        var account = await _unitOfWork.AccountRepository.Get(accountId);
+
+        if (account is null)
             return NotFound("Account not found");
 
-        return Ok(new { Balance = balance });
+        return Ok(new { account.Balance });
     }
 }

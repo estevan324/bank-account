@@ -5,5 +5,5 @@ namespace BankAccount.Repositories.Interfaces;
 public interface IAccountRepository
 {
     Account Create(Account account);
-    Task<double?> ShowBalance(Guid accountId);
+    Task<Account?> Get(Guid accountId);
 }
