@@ -2,6 +2,7 @@
 using BankAccount.DTOs.Clients;
 using BankAccount.Entities;
 using BankAccount.Entities.Enums;
+using BankAccount.ExtensionMethods;
 using BankAccount.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +45,7 @@ public class AccountController : ControllerBase
 
     [Authorize]
     [HttpPost("transfer")]
-    public async Task<ActionResult> Transfer([FromBody] TransferRequest transfer)
+    public async Task<ActionResult<TransferResponse>> Transfer([FromBody] TransferRequest transfer)
     {
         var origin = await _unitOfWork.AccountRepository.Get(transfer.Origin);
         var destiny = await _unitOfWork.AccountRepository.Get(transfer.Target);
@@ -52,6 +53,8 @@ public class AccountController : ControllerBase
         if (origin is null || destiny is null)
             return BadRequest();
 
+        if (origin.Balance < transfer.Amount) 
+            throw new InvalidOperationException("Insufficient balance");
         origin.Balance -= transfer.Amount;
         destiny.Balance += transfer.Amount;
 
@@ -63,13 +66,7 @@ public class AccountController : ControllerBase
 
         await _unitOfWork.CommitAsync();
 
-        return Ok(new
-        {
-            history.Date,
-            Type = Enum.GetName<TransactionType>(history.Type),
-            history.Amount,
-            history.OriginId,
-            history.DestinyId
-        });
+        return Ok(history.ConvertToTransferResponse());
     }
+
 }

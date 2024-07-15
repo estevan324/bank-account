@@ -2,11 +2,8 @@
 
 namespace BankAccount.DTOs.Account
 {
-    public class TransferRequest
+    public class DepositRequest
     {
-        [Required]
-        public Guid Origin { get; set; }
-
         [Required]
         public Guid Target { get; set; }
 
