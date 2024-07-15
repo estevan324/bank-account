@@ -17,11 +17,23 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(builder);
-
         builder.Entity<TransactionHistory>()
             .Property(t => t.Type)
             .HasMaxLength(20)
             .HasConversion(c => c.ToString(), c => Enum.Parse<TransactionType>(c));
+
+        builder.Entity<TransactionHistory>()
+            .HasOne(t => t.Origin)
+            .WithMany()
+            .HasForeignKey(t => t.OriginId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<TransactionHistory>()
+            .HasOne(t => t.Destiny)
+            .WithMany()
+            .HasForeignKey(t => t.DestinyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        base.OnModelCreating(builder);
     }
 }

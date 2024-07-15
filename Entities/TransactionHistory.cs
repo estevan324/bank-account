@@ -19,11 +19,22 @@ public class TransactionHistory
     [Required]
     public TransactionType Type { get; set; }
 
-    public TransactionHistory(double amount, DateTime date, TransactionType type)
+    [Required]
+    public Guid OriginId { get; set; }
+
+    [Required]
+    public Guid DestinyId { get; set; }
+
+    public Account? Origin { get; set; }
+    public Account? Destiny { get; set; }
+
+    public TransactionHistory(double amount, DateTime date, TransactionType type, Guid originId, Guid destinyId)
     {
         Id = new Guid();
         Amount = amount;
         Date = date;
         Type = type;
+        OriginId = originId;
+        DestinyId = destinyId;
     }
 }
