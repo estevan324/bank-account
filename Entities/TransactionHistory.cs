@@ -1,6 +1,7 @@
 ﻿using BankAccount.Entities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BankAccount.Entities;
 
@@ -25,7 +26,10 @@ public class TransactionHistory
     [Required]
     public Guid DestinyId { get; set; }
 
+    [JsonIgnore]
     public Account? Origin { get; set; }
+
+    [JsonIgnore]
     public Account? Destiny { get; set; }
 
     public TransactionHistory(double amount, DateTime date, TransactionType type, Guid originId, Guid destinyId)

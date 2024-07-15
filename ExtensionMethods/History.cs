@@ -1,4 +1,5 @@
 ﻿using BankAccount.DTOs.Account;
+using BankAccount.Entities;
 using BankAccount.Entities.Enums;
 
 namespace BankAccount.ExtensionMethods;
@@ -14,5 +15,17 @@ public static class History
             history.Amount,
             history.OriginId,
             history.DestinyId);
+    }
+
+    public static IEnumerable<TransferResponse> ConvertToTransferResponse(this IEnumerable<TransactionHistory> histories)
+    {
+        var newHistories = histories.Select(h => new TransferResponse(
+            h.Date,
+            Enum.GetName<TransactionType>(h.Type) ?? string.Empty,
+            h.Amount,
+            h.OriginId,
+            h.DestinyId));
+
+        return newHistories;
     }
 }

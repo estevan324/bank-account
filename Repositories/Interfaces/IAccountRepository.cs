@@ -10,4 +10,5 @@ public interface IAccountRepository
     Task<Account?> GetAsync(Expression<Func<Account, bool>> predicate);
     Account Update(Account account);
     void SaveHistory(HistoryDetail history);
+    Task<IEnumerable<TransactionHistory>> GetHistoriesAsync(int page, int pageLimit, Guid accountId);
 }

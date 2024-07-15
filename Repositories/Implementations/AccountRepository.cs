@@ -29,6 +29,16 @@ public class AccountRepository : IAccountRepository
             .FirstOrDefaultAsync(predicate);
     }
 
+    public async Task<IEnumerable<TransactionHistory>> GetHistoriesAsync(int page, int pageLimit, Guid accountId)
+    {
+        return await _context.TransactionHistories
+            .Where(t => t.OriginId == accountId || t.DestinyId == accountId)
+            .Skip((page - 1) * pageLimit)
+            .Take(pageLimit)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public void SaveHistory(HistoryDetail history)
     {
         var transactionHistory = new TransactionHistory(history.Amount, history.Date, history.Type, history.OriginId, history.DestinyId);

@@ -6,6 +6,7 @@ using BankAccount.ExtensionMethods;
 using BankAccount.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace BankAccount.Controllers;
@@ -88,16 +89,20 @@ public class AccountController : ControllerBase
         return Ok(history.ConvertToTransferResponse());
     }
 
+    private string GetUserId()
+    {
+        var userClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+
+        if (userClaim is null) throw new MissingMemberException();
+
+        return userClaim.Value;
+    }
+
     [Authorize]
     [HttpPost("withdraw")]
     public async Task<ActionResult<TransferResponse>> Withdraw(WithdrawRequest withdraw)
     {
-        var userClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-
-        if (userClaim is null)
-            return BadRequest();
-
-        var id = userClaim.Value;
+        var id = GetUserId();
         var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == id);
         if (account is null) return BadRequest();
 
@@ -113,5 +118,19 @@ public class AccountController : ControllerBase
         await _unitOfWork.CommitAsync();
 
         return Ok(history.ConvertToTransferResponse());
+    }
+
+    [Authorize]
+    [HttpGet("historic")]
+    public async Task<ActionResult> GetHistories([FromQuery] HistoricRequest request)
+    {
+        var userId = GetUserId();
+
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == userId);
+        if (account is null) return BadRequest();
+
+        var histories = await _unitOfWork.AccountRepository.GetHistoriesAsync(request.Page, request.PageLimit, account.Id);
+
+        return Ok(histories.ConvertToTransferResponse());
     }
 }
