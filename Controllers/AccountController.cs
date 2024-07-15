@@ -59,12 +59,11 @@ public class AccountController : ControllerBase
         origin.Balance -= transfer.Amount;
         destiny.Balance += transfer.Amount;
 
+        var history = new HistoryDetail(transfer.Amount, DateTime.Now, TransactionType.Transfer, origin.Id, destiny.Id);
+
         _unitOfWork.AccountRepository.Update(origin);
         _unitOfWork.AccountRepository.Update(destiny);
-
-        var history = new HistoryDetail(transfer.Amount, DateTime.Now, TransactionType.Transfer, origin.Id, destiny.Id);
         _unitOfWork.AccountRepository.SaveHistory(history);
-
         await _unitOfWork.CommitAsync();
 
         return Ok(history.ConvertToTransferResponse());
@@ -79,11 +78,38 @@ public class AccountController : ControllerBase
             return BadRequest();
 
         account.Balance += deposit.Amount;
-        _unitOfWork.AccountRepository.Update(account);
 
         var history = new HistoryDetail(deposit.Amount, DateTime.Now, TransactionType.Deposit, account.Id, account.Id);
-        _unitOfWork.AccountRepository.SaveHistory(history);
 
+        _unitOfWork.AccountRepository.Update(account);
+        _unitOfWork.AccountRepository.SaveHistory(history);
+        await _unitOfWork.CommitAsync();
+
+        return Ok(history.ConvertToTransferResponse());
+    }
+
+    [Authorize]
+    [HttpPost("withdraw")]
+    public async Task<ActionResult<TransferResponse>> Withdraw(WithdrawRequest withdraw)
+    {
+        var userClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+
+        if (userClaim is null)
+            return BadRequest();
+
+        var id = userClaim.Value;
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == id);
+        if (account is null) return BadRequest();
+
+        if (account.Balance < withdraw.Amount)
+            return BadRequest("Insufficient balance");
+
+        account.Balance -= withdraw.Amount;
+
+        var history = new HistoryDetail(withdraw.Amount, DateTime.Now, TransactionType.Withdraw, account.Id, account.Id);
+
+        _unitOfWork.AccountRepository.Update(account);
+        _unitOfWork.AccountRepository.SaveHistory(history);
         await _unitOfWork.CommitAsync();
 
         return Ok(history.ConvertToTransferResponse());
