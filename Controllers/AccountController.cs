@@ -1,6 +1,7 @@
 ﻿using BankAccount.DTOs.Clients;
 using BankAccount.Entities;
 using BankAccount.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankAccount.Controllers;
@@ -25,5 +26,16 @@ public class AccountController : ControllerBase
         await _unitOfWork.CommitAsync();
 
         return account.Id;
+    }
+
+    [Authorize]
+    [HttpGet("balance")]
+    public async Task<ActionResult> ShowBalance([FromQuery] Guid accountId)
+    {
+        var balance = await _unitOfWork.AccountRepository.ShowBalance(accountId);
+        if (balance is null)
+            return NotFound("Account not found");
+
+        return Ok(new { Balance = balance });
     }
 }

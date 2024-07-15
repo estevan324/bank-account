@@ -1,6 +1,7 @@
 ﻿using BankAccount.Context;
 using BankAccount.Entities;
 using BankAccount.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankAccount.Repositories.Implementations;
 
@@ -17,5 +18,12 @@ public class AccountRepository : IAccountRepository
         _context.Accounts.Add(account);
 
         return account;
+    }
+
+    public async Task<double?> ShowBalance(Guid accountId)
+    {
+        var account = await _context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == accountId);
+
+        return (account is null) ? null : account.Balance;
     }
 }
