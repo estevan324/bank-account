@@ -3,6 +3,7 @@ using BankAccount.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace BankAccount.Controllers;
 
@@ -30,9 +31,11 @@ public class AuthController : ControllerBase
 
         var claims = await _userManager.GetClaimsAsync(user);
 
+        claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
+
         var token = _tokenService.GenerateAccessToken(claims, _configuration);
         var writtenToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return Ok(new TokenResponse(writtenToken, token.ValidTo));
+        return Ok(new TokenResponse(writtenToken, token.ValidTo.ToLocalTime()));
     }
 }

@@ -24,7 +24,7 @@ public class CustomerRepository : ICustomerRepository
         var claims = new List<Claim>
         {
             new("CPF", userDto.Cpf),
-            new(ClaimTypes.Name, userDto.Name)
+            new(ClaimTypes.Name, userDto.Name),
         };
 
         var result = await _userManager.CreateAsync(user, userDto.Password);

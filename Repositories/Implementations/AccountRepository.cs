@@ -3,6 +3,7 @@ using BankAccount.DTOs.Account;
 using BankAccount.Entities;
 using BankAccount.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace BankAccount.Repositories.Implementations;
 
@@ -21,9 +22,11 @@ public class AccountRepository : IAccountRepository
         return account;
     }
 
-    public async Task<Account?> Get(Guid accountId)
+    public async Task<Account?> GetAsync(Expression<Func<Account, bool>> predicate)
     {
-        return await _context.Accounts.AsNoTracking().FirstOrDefaultAsync(c => c.Id == accountId);
+        return await _context.Accounts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(predicate);
     }
 
     public void SaveHistory(HistoryDetail history)

@@ -6,6 +6,7 @@ using BankAccount.ExtensionMethods;
 using BankAccount.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BankAccount.Controllers;
 
@@ -35,7 +36,7 @@ public class AccountController : ControllerBase
     [HttpGet("balance")]
     public async Task<ActionResult> ShowBalance([FromQuery] Guid accountId)
     {
-        var account = await _unitOfWork.AccountRepository.Get(accountId);
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == accountId);
 
         if (account is null)
             return NotFound("Account not found");
@@ -47,8 +48,8 @@ public class AccountController : ControllerBase
     [HttpPost("transfer")]
     public async Task<ActionResult<TransferResponse>> Transfer([FromBody] TransferRequest transfer)
     {
-        var origin = await _unitOfWork.AccountRepository.Get(transfer.Origin);
-        var destiny = await _unitOfWork.AccountRepository.Get(transfer.Target);
+        var origin = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == transfer.Origin);
+        var destiny = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == transfer.Target);
 
         if (origin is null || destiny is null)
             return BadRequest();
@@ -69,10 +70,11 @@ public class AccountController : ControllerBase
         return Ok(history.ConvertToTransferResponse());
     }
 
+    [Authorize]
     [HttpPost("deposit")]
     public async Task<ActionResult<TransferResponse>> Deposit([FromBody] DepositRequest deposit)
     {
-        var account = await _unitOfWork.AccountRepository.Get(deposit.Target);
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == deposit.Target);
         if (account is null)
             return BadRequest();
 
