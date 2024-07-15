@@ -14,12 +14,12 @@ public class TransactionHistory
     public double Amount { get; set; }
 
     [Required]
-    public DateOnly Date { get; set; }
+    public DateTime Date { get; set; }
 
     [Required]
     public TransactionType Type { get; set; }
 
-    public TransactionHistory(double amount, DateOnly date, TransactionType type)
+    public TransactionHistory(double amount, DateTime date, TransactionType type)
     {
         Id = new Guid();
         Amount = amount;
