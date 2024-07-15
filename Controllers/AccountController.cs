@@ -69,4 +69,21 @@ public class AccountController : ControllerBase
         return Ok(history.ConvertToTransferResponse());
     }
 
+    [HttpPost("deposit")]
+    public async Task<ActionResult<TransferResponse>> Deposit([FromBody] DepositRequest deposit)
+    {
+        var account = await _unitOfWork.AccountRepository.Get(deposit.Target);
+        if (account is null)
+            return BadRequest();
+
+        account.Balance += deposit.Amount;
+        _unitOfWork.AccountRepository.Update(account);
+
+        var history = new HistoryDetail(deposit.Amount, DateTime.Now, TransactionType.Deposit, account.Id, account.Id);
+        _unitOfWork.AccountRepository.SaveHistory(history);
+
+        await _unitOfWork.CommitAsync();
+
+        return Ok(history.ConvertToTransferResponse());
+    }
 }
