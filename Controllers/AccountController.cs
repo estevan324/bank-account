@@ -6,8 +6,8 @@ using BankAccount.ExtensionMethods;
 using BankAccount.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using System.Security.Claims;
+using BankAccount.Exceptions;
 
 namespace BankAccount.Controllers;
 
@@ -40,10 +40,11 @@ public class AccountController : ControllerBase
         var account = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == accountId);
 
         if (account is null)
-            return NotFound("Account not found");
+            throw new NotFoundException("Account not found");
 
         return Ok(new { account.Balance });
     }
+
 
     [Authorize]
     [HttpPost("transfer")]
@@ -53,10 +54,11 @@ public class AccountController : ControllerBase
         var destiny = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == transfer.Target);
 
         if (origin is null || destiny is null)
-            return BadRequest();
+            throw new BadRequestException("You must inform the origin and target accounts correctly");
 
-        if (origin.Balance < transfer.Amount) 
-            throw new InvalidOperationException("Insufficient balance");
+        if (origin.Balance < transfer.Amount)
+            InsufficientBalance();
+
         origin.Balance -= transfer.Amount;
         destiny.Balance += transfer.Amount;
 
@@ -74,9 +76,7 @@ public class AccountController : ControllerBase
     [HttpPost("deposit")]
     public async Task<ActionResult<TransferResponse>> Deposit([FromBody] DepositRequest deposit)
     {
-        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == deposit.Target);
-        if (account is null)
-            return BadRequest();
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.Id == deposit.Target) ?? throw new NotFoundException("Account not found, you must inform the id correctly");
 
         account.Balance += deposit.Amount;
 
@@ -89,25 +89,15 @@ public class AccountController : ControllerBase
         return Ok(history.ConvertToTransferResponse());
     }
 
-    private string GetUserId()
-    {
-        var userClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-
-        if (userClaim is null) throw new MissingMemberException();
-
-        return userClaim.Value;
-    }
-
     [Authorize]
     [HttpPost("withdraw")]
     public async Task<ActionResult<TransferResponse>> Withdraw(WithdrawRequest withdraw)
     {
         var id = GetUserId();
-        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == id);
-        if (account is null) return BadRequest();
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == id) ?? throw new NotFoundException("Account not found, you must inform the id correctly");
 
         if (account.Balance < withdraw.Amount)
-            return BadRequest("Insufficient balance");
+            InsufficientBalance();
 
         account.Balance -= withdraw.Amount;
 
@@ -126,11 +116,22 @@ public class AccountController : ControllerBase
     {
         var userId = GetUserId();
 
-        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == userId);
-        if (account is null) return BadRequest();
+        var account = await _unitOfWork.AccountRepository.GetAsync(a => a.UserId == userId) ?? throw new NotFoundException("Account not found, you must inform the id correctly");
 
         var histories = await _unitOfWork.AccountRepository.GetHistoriesAsync(request.Page, request.PageLimit, account.Id);
 
         return Ok(histories.ConvertToTransferResponse());
+    }
+
+    private string GetUserId()
+    {
+        var userClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)!;
+
+        return userClaim.Value;
+    }
+
+    private static void InsufficientBalance()
+    {
+        throw new BadRequestException("Insufficient balance to complete the transaction.");
     }
 }

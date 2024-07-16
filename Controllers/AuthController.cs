@@ -1,5 +1,6 @@
 ﻿using BankAccount.DTOs.Auth;
 using BankAccount.Services.Interfaces;
+using BankAccount.Exceptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -26,8 +27,7 @@ public class AuthController : ControllerBase
     {
         var user = await _userManager.FindByNameAsync(login.Cpf!);
         if (user is null || !(await _userManager.CheckPasswordAsync(user, login.Password!)))
-            // TODO: Create customized error messages to return
-            return Unauthorized("Invalid CPF or password");
+            throw new UnauthorizedException("Invalid CPF or Password");
 
         var claims = await _userManager.GetClaimsAsync(user);
 

@@ -1,4 +1,5 @@
 using BankAccount.Context;
+using BankAccount.Middlewares;
 using BankAccount.Repositories.Implementations;
 using BankAccount.Repositories.Interfaces;
 using BankAccount.Services.Implementations;
@@ -57,6 +58,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

@@ -31,7 +31,7 @@ public class CustomerRepository : ICustomerRepository
         if (!result.Succeeded)
         {
             var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
-            throw new UserCreationException($"User creation failed: {errorMessage}");
+            throw new BadRequestException($"User creation failed: {errorMessage}");
         }
 
         await _userManager.AddClaimsAsync(user, claims);
